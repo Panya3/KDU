@@ -989,6 +989,39 @@ UINT KDUCheckAnotherInstance()
     return 0;
 }
 
+BOOL WINAPI KDUControlDSE(
+    _In_ ULONG ProviderId,
+    _In_ ULONG DSEValue
+)
+{
+    BOOLEAN bVBSRunning = FALSE, bHVCIRunning = FALSE, bHVCIStrict = FALSE;
+    OSVERSIONINFO osv;
+    RtlSecureZeroMemory(&osv, sizeof(osv));
+    osv.dwOSVersionInfoSize = sizeof(osv);
+    RtlGetVersion((PRTL_OSVERSIONINFOW)&osv);
+
+    supQueryVBSState(&bVBSRunning, &bHVCIRunning, &bHVCIStrict);
+
+    return (KDUProcessDSEFixSwitch(bHVCIRunning, osv.dwBuildNumber, ProviderId, DSEValue) != 0);
+}
+
+BOOL WINAPI KDUDisableProcessProtection(
+    _In_ ULONG ProviderId,
+    _In_ ULONG_PTR ProcessId
+)
+{
+    BOOLEAN bVBSRunning = FALSE, bHVCIRunning = FALSE, bHVCIStrict = FALSE;
+    OSVERSIONINFO osv;
+    RtlSecureZeroMemory(&osv, sizeof(osv));
+    osv.dwOSVersionInfoSize = sizeof(osv);
+    RtlGetVersion((PRTL_OSVERSIONINFOW)&osv);
+
+    supQueryVBSState(&bVBSRunning, &bHVCIRunning, &bHVCIStrict);
+
+    return (KDUProcessPSObjectSwitch(bHVCIRunning, osv.dwBuildNumber, ProviderId, ProcessId) != 0);
+}
+
+#ifdef BUILD_KDU_EXE
 /*
 * main
 *
@@ -1023,3 +1056,4 @@ int main()
     printf_s("[+] Return value: %d. Bye-bye!\r\n", retVal);
     return retVal;
 }
+#endif

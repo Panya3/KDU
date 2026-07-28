@@ -19,6 +19,8 @@
 
 #pragma once
 
+#include "kdulog.h"
+
 #pragma warning(disable: 4201)
 
 typedef enum _KDU_SOURCEBASE {

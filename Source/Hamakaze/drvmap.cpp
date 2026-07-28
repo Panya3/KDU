@@ -1035,3 +1035,79 @@ BOOL KDUMapDriver(
 
     return bSuccess;
 }
+
+/*
+* KDUMapDriverFromMemory
+*
+* Purpose:
+*
+* Map driver raw PE buffer from memory into kernel.
+*
+*/
+BOOL WINAPI KDUMapDriverFromMemory(
+    _In_ ULONG ProviderId,
+    _In_ ULONG ShellVersion,
+    _In_ PVOID DriverBuffer,
+    _In_ SIZE_T DriverBufferSize,
+    _In_opt_ LPCWSTR DriverObjectName,
+    _In_opt_ LPCWSTR DriverRegistryPath
+)
+{
+    BOOL bSuccess = FALSE;
+    KDU_CONTEXT* provContext;
+    PVOID pvImage = NULL;
+    NTSTATUS ntStatus;
+
+    if (DriverBuffer == NULL || DriverBufferSize == 0) {
+        supPrintfEvent(kduEventError, "[!] Invalid driver buffer parameter\r\n");
+        return FALSE;
+    }
+
+    if (ShellVersion == 0 || ShellVersion > KDU_SHELLCODE_VMAX) {
+        ShellVersion = KDU_SHELLCODE_V1;
+    }
+
+    if (ShellVersion == KDU_SHELLCODE_V3) {
+        if (DriverObjectName == NULL) {
+            supPrintfEvent(kduEventError, "[!] Driver object name is required when working with shellcode v3\r\n");
+            return FALSE;
+        }
+    }
+
+    ntStatus = supLoadBufferForMapping(DriverBuffer, DriverBufferSize, &pvImage);
+    if (!NT_SUCCESS(ntStatus) || pvImage == NULL) {
+        supPrintfEvent(kduEventError, "[!] Error loading driver buffer for mapping (0x%lX)\r\n", ntStatus);
+        return FALSE;
+    }
+
+    BOOLEAN bVBSRunning = FALSE, bHVCIRunning = FALSE, bHVCIStrict = FALSE;
+    OSVERSIONINFO osv;
+    RtlSecureZeroMemory(&osv, sizeof(osv));
+    osv.dwOSVersionInfoSize = sizeof(osv);
+    RtlGetVersion((PRTL_OSVERSIONINFOW)&osv);
+
+    supQueryVBSState(&bVBSRunning, &bHVCIRunning, &bHVCIStrict);
+
+    provContext = KDUProviderCreate(ProviderId,
+        bHVCIRunning,
+        osv.dwBuildNumber,
+        ShellVersion,
+        ActionTypeMapDriver);
+
+    if (provContext) {
+        if (ShellVersion == KDU_SHELLCODE_V3) {
+            if (DriverObjectName) {
+                ScCreateFixedUnicodeString(&provContext->DriverObjectName, (LPWSTR)DriverObjectName);
+            }
+            if (DriverRegistryPath) {
+                ScCreateFixedUnicodeString(&provContext->DriverRegistryPath, (LPWSTR)DriverRegistryPath);
+            }
+        }
+
+        bSuccess = provContext->Provider->Callbacks.MapDriver(provContext, pvImage);
+        KDUProviderRelease(provContext);
+    }
+
+    supFreeBufferForMapping(pvImage);
+    return bSuccess;
+}

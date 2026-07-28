@@ -286,10 +286,26 @@ NTSTATUS supLoadFileForMapping(
     _In_ LPCWSTR PayloadFileName,
     _Out_ PVOID* LoadBase);
 
+NTSTATUS supLoadBufferForMapping(
+    _In_ PVOID Buffer,
+    _In_ SIZE_T BufferSize,
+    _Out_ PVOID* LoadBase);
+
+VOID supFreeBufferForMapping(
+    _In_ PVOID LoadBase);
+
 VOID supPrintfEvent(
     _In_ KDU_EVENT_TYPE Event,
     _Printf_format_string_ LPCSTR Format,
     ...);
+
+INT kduPrintf(
+    _Printf_format_string_ LPCSTR Format,
+    ...);
+
+#ifndef printf_s
+#define printf_s kduPrintf
+#endif
 
 NTSTATUS supQueryImageSize(
     _In_ PVOID ImageBase,

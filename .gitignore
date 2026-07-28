@@ -1,3 +1,5 @@
 Source/**/output
 .vs
 Source/Hamakaze/shellstager.lst
+bin/
+*.lib

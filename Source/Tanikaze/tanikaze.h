@@ -16,13 +16,26 @@
 * PARTICULAR PURPOSE.
 *
 *******************************************************************************/
+#pragma once
+
 #include <Windows.h>
+#include "Shared/kdubase.h"
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
+extern KDU_DB gProvTable;
+extern KDU_DB_VERSION gVersion;
+
+#if defined(__cplusplus)
+}
+#endif
+
+#ifdef TANIKAZE_IMPL
 #include "Shared/consts.h"
 #include "Shared/ntos/ntbuilds.h"
-#include "Shared/kdubase.h"
 #include "resource.h"
-
-#pragma once
 
 KDU_DB_ENTRY gProvEntry[] = {
    {
@@ -1018,6 +1031,7 @@ extern "C" {
         KDU_VERSION_BUILD
     };
 
-#ifdef __cplusplus
+#if defined(__cplusplus)
 }
+#endif
 #endif

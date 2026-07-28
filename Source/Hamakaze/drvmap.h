@@ -31,6 +31,14 @@ BOOL KDUMapDriver(
     _In_ PKDU_CONTEXT Context,
     _In_ PVOID ImageBase);
 
+BOOL WINAPI KDUMapDriverFromMemory(
+    _In_ ULONG ProviderId,
+    _In_ ULONG ShellVersion,
+    _In_ PVOID DriverBuffer,
+    _In_ SIZE_T DriverBufferSize,
+    _In_opt_ LPCWSTR DriverObjectName,
+    _In_opt_ LPCWSTR DriverRegistryPath);
+
 BOOL WINAPI KDUPagePatchCallback(
     _In_ ULONG_PTR Address,
     _In_ PVOID UserContext);

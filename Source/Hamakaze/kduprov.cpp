@@ -24,21 +24,26 @@
 #include "envdetect.h"
 #include "provlist.h"
 
-PKDU_DB gProvTable = NULL;
+extern "C" {
+    extern KDU_DB gProvTable;
+    extern KDU_DB_VERSION gVersion;
+}
+
+PKDU_DB gProvTablePtr = &gProvTable;
 static KDU_DB_SOURCE_TYPE g_KduDbSource = KduDbSourceAuto;
 static HINSTANCE g_KduDbModule = NULL;
 
 PKDU_DB_ENTRY KDUProviderToDbEntry(
     _In_ ULONG ProviderId)
 {
-    if (gProvTable == NULL)
+    if (gProvTablePtr == NULL)
         return NULL;
 
     ULONG i;
 
-    for (i = 0; i < gProvTable->NumberOfEntries; i++) {
-        if (gProvTable->Entries[i].ProviderId == ProviderId)
-            return &gProvTable->Entries[i];
+    for (i = 0; i < gProvTablePtr->NumberOfEntries; i++) {
+        if (gProvTablePtr->Entries[i].ProviderId == ProviderId)
+            return &gProvTablePtr->Entries[i];
     }
 
     return NULL;
@@ -76,8 +81,8 @@ LPCSTR KDUFirmwareToString(
 */
 ULONG KDUProvGetActiveDbCount()
 {
-    if (gProvTable)
-        return gProvTable->NumberOfEntries;
+    if (gProvTablePtr)
+        return gProvTablePtr->NumberOfEntries;
 
     return 0;
 }
@@ -135,7 +140,7 @@ KDU_DB_SOURCE_TYPE KDUProviderGetDbSource(
 */
 PKDU_DB KDUReferenceLoadDB()
 {
-    return gProvTable;
+    return gProvTablePtr;
 }
 
 /*
@@ -569,73 +574,6 @@ static BOOL KDUProviderValidateDb(
 }
 
 /*
-* KDUProviderLoadExternalDb
-*
-* Purpose:
-*
-* Load providers database from external drv64.dll.
-*
-*/
-static HINSTANCE KDUProviderLoadExternalDb(
-    _Out_ PKDU_DB * ProviderTable
-)
-{
-    HINSTANCE hInstance;
-    KDU_DB_VERSION* pVersionInfo;
-    PKDU_DB pTable;
-
-    *ProviderTable = NULL;
-
-    SetDllDirectory(NULL);
-    hInstance = LoadLibraryEx(DRV64DLL, NULL, DONT_RESOLVE_DLL_REFERENCES);
-    if (hInstance == NULL)
-        return NULL;
-
-    printf_s("[+] Drivers database \"%ws\" loaded at 0x%p\r\n", DRV64DLL, hInstance);
-
-    pVersionInfo = (KDU_DB_VERSION*)GetProcAddress(hInstance, "gVersion");
-    pTable = (PKDU_DB)GetProcAddress(hInstance, "gProvTable");
-
-    if (!KDUProviderValidateDb("KDUEXT", pVersionInfo, pTable)) {
-        FreeLibrary(hInstance);
-        return NULL;
-    }
-
-    *ProviderTable = pTable;
-    return hInstance;
-}
-
-/*
-* KDUProviderLoadEmbeddedDb
-*
-* Purpose:
-*
-* Initialize providers database from Hamakaze embedded data.
-*
-*/
-static HINSTANCE KDUProviderLoadEmbeddedDb(
-    _Out_ PKDU_DB * ProviderTable
-)
-{
-    HINSTANCE hInstance;
-
-    *ProviderTable = NULL;
-    hInstance = GetModuleHandle(NULL);
-
-    if (!KDUProviderValidateDb("KDUEMB",
-        &gVersionEmbedded,
-        &gProvTableEmbedded))
-    {
-        return NULL;
-    }
-
-    printf_s("[+] Embedded drivers database selected, module 0x%p\r\n", hInstance);
-
-    *ProviderTable = &gProvTableEmbedded;
-    return hInstance;
-}
-
-/*
 * KDUProviderLoadDB
 *
 * Purpose:
@@ -647,60 +585,12 @@ HINSTANCE KDUProviderLoadDB(
     VOID
 )
 {
-    HINSTANCE hInstance;
-    PKDU_DB providerTable;
-
-    FUNCTION_ENTER_MSG(__FUNCTION__);
-
-    hInstance = NULL;
-    providerTable = NULL;
-
-    do {
-
-        if (g_KduDbModule != NULL && gProvTable != NULL) {
-            hInstance = g_KduDbModule;
-            break;
-        }
-
-        switch (g_KduDbSource) {
-
-        case KduDbSourceExternalDll:
-
-            hInstance = KDUProviderLoadExternalDb(&providerTable);
-            break;
-
-        case KduDbSourceEmbedded:
-
-            hInstance = KDUProviderLoadEmbeddedDb(&providerTable);
-            break;
-
-        case KduDbSourceAuto:
-        default:
-
-            hInstance = KDUProviderLoadExternalDb(&providerTable);
-            if (hInstance == NULL) {
-                // Fall back to embedded providers database when external DLL is unavailable.
-                hInstance = KDUProviderLoadEmbeddedDb(&providerTable);
-            }
-            break;
-        }
-
-        if (hInstance == NULL || providerTable == NULL) {
-            if (g_KduDbSource == KduDbSourceExternalDll) {
-                supShowWin32Error("[!] Cannot load drivers database", GetLastError());
-            }
-            hInstance = NULL;
-            break;
-        }
-
-        g_KduDbModule = hInstance;
-        gProvTable = providerTable;
-
-    } while (FALSE);
-
-    FUNCTION_LEAVE_MSG(__FUNCTION__);
-
-    return hInstance;
+    if (g_KduDbModule == NULL) {
+        g_KduDbModule = GetModuleHandle(NULL);
+        KDUProviderValidateDb("TANIKAZE", &gVersion, &gProvTable);
+        gProvTablePtr = &gProvTable;
+    }
+    return g_KduDbModule;
 }
 
 BOOL KDUpRwHandlersAreSet(

@@ -2107,6 +2107,103 @@ ULONG supSelectNonPagedPoolTag(
 }
 
 /*
+* kduPrintf
+*
+* Purpose:
+*
+* Redirect console printf_s to external KduLog.
+*
+*/
+INT kduPrintf(
+    _Printf_format_string_ LPCSTR Format,
+    ...
+)
+{
+    va_list args;
+    char buffer[2048];
+
+    va_start(args, Format);
+    int len = vsnprintf_s(buffer, sizeof(buffer), _TRUNCATE, Format, args);
+    va_end(args);
+
+    KduLog(KDU_LOG_INFO, "%s", buffer);
+    return len;
+}
+
+/*
+* supLoadBufferForMapping
+*
+* Purpose:
+*
+* Load input driver buffer from memory into image format.
+*
+*/
+NTSTATUS supLoadBufferForMapping(
+    _In_ PVOID Buffer,
+    _In_ SIZE_T BufferSize,
+    _Out_ PVOID * LoadBase
+)
+{
+    PIMAGE_DOS_HEADER pDosHeader;
+    PIMAGE_NT_HEADERS pNtHeaders;
+    PIMAGE_SECTION_HEADER pSection;
+    PBYTE pvImage;
+    ULONG i;
+
+    *LoadBase = NULL;
+
+    if (Buffer == NULL || BufferSize < sizeof(IMAGE_DOS_HEADER))
+        return STATUS_INVALID_PARAMETER;
+
+    pDosHeader = (PIMAGE_DOS_HEADER)Buffer;
+    if (pDosHeader->e_magic != IMAGE_DOS_SIGNATURE)
+        return STATUS_INVALID_IMAGE_FORMAT;
+
+    if (BufferSize < (SIZE_T)pDosHeader->e_lfanew + sizeof(IMAGE_NT_HEADERS))
+        return STATUS_INVALID_IMAGE_FORMAT;
+
+    pNtHeaders = (PIMAGE_NT_HEADERS)((PBYTE)Buffer + pDosHeader->e_lfanew);
+    if (pNtHeaders->Signature != IMAGE_NT_SIGNATURE)
+        return STATUS_INVALID_IMAGE_FORMAT;
+
+    ULONG sizeOfImage = pNtHeaders->OptionalHeader.SizeOfImage;
+    pvImage = (PBYTE)VirtualAlloc(NULL, sizeOfImage, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+    if (pvImage == NULL)
+        return STATUS_INSUFFICIENT_RESOURCES;
+
+    ULONG sizeOfHeaders = pNtHeaders->OptionalHeader.SizeOfHeaders;
+    if (sizeOfHeaders > BufferSize)
+        sizeOfHeaders = (ULONG)BufferSize;
+    if (sizeOfHeaders > sizeOfImage)
+        sizeOfHeaders = sizeOfImage;
+    RtlCopyMemory(pvImage, Buffer, sizeOfHeaders);
+
+    pSection = IMAGE_FIRST_SECTION(pNtHeaders);
+    for (i = 0; i < pNtHeaders->FileHeader.NumberOfSections; i++, pSection++) {
+        if (pSection->SizeOfRawData > 0 && pSection->PointerToRawData > 0) {
+            if ((ULONG_PTR)pSection->PointerToRawData + pSection->SizeOfRawData <= BufferSize) {
+                RtlCopyMemory(
+                    pvImage + pSection->VirtualAddress,
+                    (PBYTE)Buffer + pSection->PointerToRawData,
+                    pSection->SizeOfRawData);
+            }
+        }
+    }
+
+    *LoadBase = pvImage;
+    return STATUS_SUCCESS;
+}
+
+VOID supFreeBufferForMapping(
+    _In_ PVOID LoadBase
+)
+{
+    if (LoadBase) {
+        VirtualFree(LoadBase, 0, MEM_RELEASE);
+    }
+}
+
+/*
 * supLoadFileForMapping
 *
 * Purpose:
@@ -2162,46 +2259,30 @@ VOID supPrintfEvent(
     ...
 )
 {
-    HANDLE stdHandle = GetStdHandle(STD_OUTPUT_HANDLE);
-    CONSOLE_SCREEN_BUFFER_INFO screenBufferInfo;
-    WORD origColor = FOREGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN, newColor;
+    KDU_LOG_LEVEL level;
     va_list args;
-
-    //
-    // Rememeber original text color.
-    //
-    if (GetConsoleScreenBufferInfo(stdHandle, &screenBufferInfo)) {
-        origColor = *(&screenBufferInfo.wAttributes);
-    }
+    char buffer[2048];
 
     switch (Event) {
     case kduEventInformation:
-        newColor = FOREGROUND_GREEN | FOREGROUND_INTENSITY;
+        level = KDU_LOG_INFO;
         break;
     case kduEventWarning:
-        newColor = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY;
+        level = KDU_LOG_WARNING;
         break;
     case kduEventError:
-        newColor = FOREGROUND_RED | FOREGROUND_INTENSITY;
+        level = KDU_LOG_ERROR;
         break;
     default:
-        newColor = FOREGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN;
+        level = KDU_LOG_INFO;
         break;
     }
 
-    SetConsoleTextAttribute(stdHandle, newColor);
-
-    //
-    // Printf message.
-    //
     va_start(args, Format);
-    vprintf_s(Format, args);
+    vsnprintf_s(buffer, sizeof(buffer), _TRUNCATE, Format, args);
     va_end(args);
 
-    //
-    // Restore original text color.
-    //
-    SetConsoleTextAttribute(stdHandle, origColor);
+    KduLog(level, "%s", buffer);
 }
 
 /*

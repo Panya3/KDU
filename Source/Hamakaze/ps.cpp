@@ -190,7 +190,7 @@ BOOL KDURunCommandPPL(
     si.cb = sizeof(si);
     RtlZeroMemory(&pi, sizeof(pi));
 
-    wprintf_s(L"[+] Creating Process '%s'\r\n", CommandLine);
+    printf_s("[+] Creating Process '%ws'\r\n", CommandLine);
 
     if (!CreateProcess(
         NULL,               // No module name (use command line)
@@ -1170,11 +1170,11 @@ BOOL KDURunCommandInheritee(
     // check if process can be started (no PPL) or created suspended to patch PPL
     DWORD creationOptions;
     if (PPLLevel > 0) {
-        wprintf_s(L"[+] Creating suspended Process '%s'\r\n", CommandLine);
+        printf_s("[+] Creating suspended Process '%ws'\r\n", CommandLine);
         creationOptions = CREATE_SUSPENDED;
     }
     else {
-        wprintf_s(L"[+] Creating Process '%s'\r\n", CommandLine);
+        printf_s("[+] Creating Process '%ws'\r\n", CommandLine);
         creationOptions = NULL;
     }
 
