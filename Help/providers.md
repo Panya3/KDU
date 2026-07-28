@@ -149,6 +149,77 @@ MSFT blacklist types:
 |63        |165       |PGRHostControl         |PGRHostControl                        |PGRHostControl driver                                 |                              |FLIR Integrated Imaging Solutions, Inc.           |WinIo       |7601      |ANY       |0x00000122|0x00000007   |24824    |8D733095AC1CFCD799F58BE3B8A25800F31E6FE2|671F7A5E44856B3A785AD7824812435F43A1B73F|05E5E9F806933932CC2EE733F8D4A59F0D9FC99A|2007A5BC8617AFBB207E9FB98CC4A99DA533C6E4F059BB91D5A3B9626A87AFBD|
 |64        |166       |LECOMAx                |LECOMA64_2                            |LECO(R) LECOMA Device Driver                          |                              |LECO Corporation                                  |None        |7601      |ANY       |0x00004100|0x00000007   |18192    |EB817E8AF016F6A3ECE2B7CF421EC6D96970E285|8F21CD62CC6881811C1563930A13E7E98CE558D8|995BA4F995F0D362EEFA5AAAA81426378F12D034|22D2AA641E7E828E08E8FBA08A3DE10670C7F4134612AEA18B42FB1298EE9A5B|
 
+
+## 📋 Detailed Logs Table [Windows 10 Pro 22H2 (Build 19045.6456)]
+
+| Provider | Status | Execution Time | Notes |
+| :---: | :---: | :---: | :--- |
+| `0` | 🟩 PASS | `0.04s` | |
+| `1` | 🟩 PASS | `0.03s` | |
+| `2` | 🟩 PASS | `0.03s` | |
+| `3` | 🟩 PASS | `0.03s` | |
+| `4` | 🟩 PASS | `4.47s` | |
+| `5` | 🟩 PASS | `0.03s` | |
+| `6` | 🟩 PASS | `0.03s` | |
+| `7` | 🟨 SKIP | — | **BSOD** |
+| `8` | 🟩 PASS | `0.03s` | |
+| `9` | 🟩 PASS | `0.03s` | |
+| `10` | 🟥 FAIL | `0.04s` | |
+| `11` | 🟥 FAIL | `0.02s` | |
+| `12` | 🟨 SKIP | — | **BSOD** |
+| `13` | 🟥 FAIL | `0.03s` | |
+| `14` | 🟩 PASS | `0.03s` | |
+| `15` | 🟥 FAIL | `0.02s` | |
+| `16` | 🟩 PASS | `0.03s` | |
+| `17` | 🟥 FAIL | `0.02s` | |
+| `18` | 🟩 PASS | `0.04s` | |
+| `19` | 🟩 PASS | `5.11s` | |
+| `20` | 🟩 PASS | `0.16s` | |
+| `21` | 🟥 FAIL | `0.02s` | |
+| `22` | 🟥 FAIL | `0.04s` | |
+| `23` | 🟩 PASS | `0.03s` | |
+| `24` | 🟩 PASS | `0.04s` | |
+| `25` | 🟥 FAIL | `0.02s` | |
+| `26` | 🟩 PASS | `0.03s` | |
+| `27` | 🟩 PASS | `0.03s` | |
+| `28` | 🟩 PASS | `17.11s` | High runtime |
+| `29` | 🟩 PASS | `3.69s` | |
+| `30` | 🟩 PASS | `14.81s` | High runtime |
+| `31` | 🟩 PASS | `4.85s` | |
+| `32` | 🟥 FAIL | `0.02s` | |
+| `33` | 🟩 PASS | `9.94s` | High runtime |
+| `34` | 🟩 PASS | `0.03s` | |
+| `35` | 🟩 PASS | `0.03s` | |
+| `36` | 🟩 PASS | `0.03s` | |
+| `37` | 🟥 FAIL | `0.02s` | |
+| `38` | 🟥 FAIL | `0.02s` | |
+| `39` | 🟩 PASS | `0.03s` | |
+| `40` | 🟩 PASS | `11.24s` | High runtime |
+| `41` | 🟥 FAIL | `0.02s` | |
+| `42` | 🟩 PASS | `3.15s` | |
+| `43` | 🟥 FAIL | `0.02s` | |
+| `44` | 🟩 PASS | `0.03s` | |
+| `45` | 🟩 PASS | `12.43s` | High runtime |
+| `46` | 🟩 PASS | `0.03s` | |
+| `47` | 🟨 SKIP | — | **Stuck** |
+| `48` | 🟩 PASS | `8.54s` | High runtime |
+| `49` | 🟩 PASS | `16.72s` | High runtime |
+| `50` | 🟩 PASS | `8.55s` | High runtime |
+| `51` | 🟩 PASS | `17.32s` | High runtime |
+| `52` | 🟩 PASS | `1.24s` | |
+| `53` | 🟩 PASS | `3.19s` | |
+| `54` | 🟩 PASS | `5.38s` | |
+| `55` | 🟩 PASS | `0.20s` | |
+| `56` | 🟩 PASS | `0.15s` | |
+| `57` | 🟩 PASS | `0.14s` | |
+| `58` | 🟩 PASS | `0.06s` | |
+| `59` | 🟩 PASS | `0.14s` | |
+| `60` | 🟩 PASS | `0.14s` | |
+| `61` | 🟩 PASS | `0.17s` | |
+| `62` | 🟩 PASS | `0.14s` | |
+| `63` | 🟩 PASS | `0.03s` | |
+| `64` | 🟩 PASS | `0.13s` | |
+
 ## Notes
 
 - `Advisory` contains the CVE or advisory identifier when available.

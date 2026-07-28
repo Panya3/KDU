@@ -27,6 +27,8 @@
 extern "C" {
     extern KDU_DB gProvTable;
     extern KDU_DB_VERSION gVersion;
+    extern const unsigned char g_KduDbData[];
+    extern const ULONG g_KduDbSize;
 }
 
 PKDU_DB gProvTablePtr = &gProvTable;
@@ -586,7 +588,7 @@ HINSTANCE KDUProviderLoadDB(
 )
 {
     if (g_KduDbModule == NULL) {
-        g_KduDbModule = GetModuleHandle(NULL);
+        g_KduDbModule = (HINSTANCE)0x12345678;
         KDUProviderValidateDb("TANIKAZE", &gVersion, &gProvTable);
         gProvTablePtr = &gProvTable;
     }

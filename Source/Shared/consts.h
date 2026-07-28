@@ -102,7 +102,7 @@
 //
 // Database id
 //
-#define IDR_KDUDB                       7000
+// Removed IDR_KDUDB as database is stored in C-array (g_KduDbData)
 
 //
 // Driver id table

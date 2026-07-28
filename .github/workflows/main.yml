@@ -22,52 +22,9 @@ jobs:
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v3
 
-      - name: Build Taigei Win32
-        working-directory: ./Source/Taigei
-        run: msbuild Taigei.vcxproj /m /p:Platform=Win32 /p:Configuration=${{ env.BUILD_CONFIGURATION }} /p:PlatformToolset=v145 /p:SolutionDir=..\
-
       - name: Build Taigei x64
         working-directory: ./Source/Taigei
         run: msbuild Taigei.vcxproj /m /p:Platform=${{ env.PLATFORM }} /p:Configuration=${{ env.BUILD_CONFIGURATION }} /p:PlatformToolset=v145 /p:SolutionDir=..\
-
-      - name: Build PCOMP
-        working-directory: ./Source/Utils/PCOMP
-        run: msbuild PCOMP.vcxproj /m /p:Platform=${{ env.PLATFORM }} /p:Configuration=${{ env.BUILD_CONFIGURATION }} /p:PlatformToolset=v145 /p:SolutionDir=..\..\
-
-      - name: Prepare compressed Taigei resources
-        shell: pwsh
-        run: |
-          $taigeiWin32Out = "Source\Taigei\output\Win32\${{ env.BUILD_CONFIGURATION }}"
-          $taigeiX64Out = "Source\Taigei\output\${{ env.PLATFORM }}\${{ env.BUILD_CONFIGURATION }}"
-          $pcompOut = "Source\Utils\PCOMP\output\${{ env.PLATFORM }}\${{ env.BUILD_CONFIGURATION }}"
-          $resOut = "Source\Hamakaze\res"
-
-          $taigei32File = Get-ChildItem -Path $taigeiWin32Out -Filter "Taigei*" | Select-Object -First 1
-          if (-not $taigei32File) { throw "Taigei Win32 output not found in $taigeiWin32Out" }
-
-          $taigei64File = Get-ChildItem -Path $taigeiX64Out -Filter "Taigei*" | Select-Object -First 1
-          if (-not $taigei64File) { throw "Taigei x64 output not found in $taigeiX64Out" }
-
-          if (!(Test-Path "$pcompOut\PCOMP.exe")) {
-            throw "PCOMP.exe not found in $pcompOut"
-          }
-
-          Copy-Item $taigei32File.FullName ".\Taigei32.dll" -Force
-          Copy-Item $taigei64File.FullName ".\SB_SMBUS_SDK.dll" -Force
-
-          & "$pcompOut\PCOMP.exe" ".\Taigei32.dll" 4130237664
-          & "$pcompOut\PCOMP.exe" ".\SB_SMBUS_SDK.dll" 4130237664
-
-          if (!(Test-Path ".\Taigei32.bin")) {
-            throw "Taigei32.bin was not created"
-          }
-
-          if (!(Test-Path ".\SB_SMBUS_SDK.bin")) {
-            throw "SB_SMBUS_SDK.bin was not created"
-          }
-
-          Copy-Item ".\Taigei32.bin" "$resOut\Taigei32.bin" -Force
-          Copy-Item ".\SB_SMBUS_SDK.bin" "$resOut\SB_SMBUS_SDK.bin" -Force
 
       - name: Build Tanikaze
         working-directory: ./Source/Tanikaze

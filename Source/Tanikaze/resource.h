@@ -2,7 +2,6 @@
 // Microsoft Visual C++ generated include file.
 // Used by resource.rc
 //
-#define IDR_KDUDB                   7000
 
 // Next default values for new objects
 // 

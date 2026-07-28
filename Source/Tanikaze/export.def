@@ -1,3 +1,5 @@
 EXPORTS
 gProvTable
 gVersion
+g_KduDbData
+g_KduDbSize

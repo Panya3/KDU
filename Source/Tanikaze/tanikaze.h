@@ -27,6 +27,8 @@ extern "C" {
 
 extern KDU_DB gProvTable;
 extern KDU_DB_VERSION gVersion;
+extern const unsigned char g_KduDbData[];
+extern const ULONG g_KduDbSize;
 
 #if defined(__cplusplus)
 }

@@ -32,13 +32,16 @@
     <ClInclude Include="..\Shared\kdubase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="kdu_db_data.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="data\kdu.db" />
+    <ClCompile Include="kdu_db_data.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

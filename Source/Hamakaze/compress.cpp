@@ -20,6 +20,11 @@
 #include "global.h"
 #include <msdelta.h>
 
+extern "C" {
+    extern const unsigned char g_KduDbData[];
+    extern const ULONG g_KduDbSize;
+}
+
 #pragma comment(lib, "msdelta.lib")
 
 /*
@@ -131,17 +136,21 @@ PVOID KDULoadResource(
     PBYTE dataPtr;
     ULONG dataSize = 0;
     SIZE_T decompressedSize = 0;
-    ULONG resKey;
 
     if (DataSize)
         *DataSize = 0;
 
     bSelf = DllHandle == NtCurrentPeb()->ImageBaseAddress;
-    resKey = (bSelf) ? ResourceId : IDR_KDUDB;
 
-    dataPtr = supQueryResourceData(resKey,
-        DllHandle,
-        &dataSize);
+    if (bSelf) {
+        dataPtr = supQueryResourceData(ResourceId,
+            DllHandle,
+            &dataSize);
+    }
+    else {
+        dataPtr = (PBYTE)g_KduDbData;
+        dataSize = g_KduDbSize;
+    }
 
     if (dataPtr && dataSize) {
 

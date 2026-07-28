@@ -161,12 +161,11 @@
     <ClInclude Include="..\Shared\kdubase.h" />
     <ClInclude Include="tanikaze.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="kdu_db_data.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="data\kdu.db" />
+    <ClCompile Include="kdu_db_data.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
