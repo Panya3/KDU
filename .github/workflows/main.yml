@@ -2,9 +2,9 @@ name: Build KDU
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "embedded" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "embedded" ]
   workflow_dispatch:
 
 env:
@@ -42,20 +42,18 @@ jobs:
           $pcompOut = "Source\Utils\PCOMP\output\${{ env.PLATFORM }}\${{ env.BUILD_CONFIGURATION }}"
           $resOut = "Source\Hamakaze\res"
 
-          if (!(Test-Path "$taigeiWin32Out\Taigei32.dll")) {
-            throw "Taigei32.dll not found in $taigeiWin32Out"
-          }
+          $taigei32File = Get-ChildItem -Path $taigeiWin32Out -Filter "Taigei*" | Select-Object -First 1
+          if (-not $taigei32File) { throw "Taigei Win32 output not found in $taigeiWin32Out" }
 
-          if (!(Test-Path "$taigeiX64Out\Taigei64.dll")) {
-            throw "Taigei64.dll not found in $taigeiX64Out"
-          }
+          $taigei64File = Get-ChildItem -Path $taigeiX64Out -Filter "Taigei*" | Select-Object -First 1
+          if (-not $taigei64File) { throw "Taigei x64 output not found in $taigeiX64Out" }
 
           if (!(Test-Path "$pcompOut\PCOMP.exe")) {
             throw "PCOMP.exe not found in $pcompOut"
           }
 
-          Copy-Item "$taigeiWin32Out\Taigei32.dll" ".\Taigei32.dll" -Force
-          Copy-Item "$taigeiX64Out\Taigei64.dll" ".\SB_SMBUS_SDK.dll" -Force
+          Copy-Item $taigei32File.FullName ".\Taigei32.dll" -Force
+          Copy-Item $taigei64File.FullName ".\SB_SMBUS_SDK.dll" -Force
 
           & "$pcompOut\PCOMP.exe" ".\Taigei32.dll" 4130237664
           & "$pcompOut\PCOMP.exe" ".\SB_SMBUS_SDK.dll" 4130237664
@@ -79,27 +77,32 @@ jobs:
         working-directory: ./Source/Hamakaze
         run: msbuild KDU.vcxproj /m /p:Platform=${{ env.PLATFORM }} /p:Configuration=${{ env.BUILD_CONFIGURATION }} /p:PlatformToolset=v145 /p:SolutionDir=..\
 
-      - name: Collect snapshot files
+      - name: Collect static libraries and headers
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force -Path Package\Application | Out-Null
+          New-Item -ItemType Directory -Force -Path bin\lib | Out-Null
+          New-Item -ItemType Directory -Force -Path bin\include | Out-Null
 
           $tanikazeOut = "Source\Tanikaze\output\${{ env.PLATFORM }}\${{ env.BUILD_CONFIGURATION }}"
           $hamakazeOut = "Source\Hamakaze\output\${{ env.PLATFORM }}\${{ env.BUILD_CONFIGURATION }}"
+          $taigeiOut    = "Source\Taigei\output\${{ env.PLATFORM }}\${{ env.BUILD_CONFIGURATION }}"
 
-          if (!(Test-Path "$tanikazeOut\drv64.dll")) {
-            throw "drv64.dll not found in $tanikazeOut"
-          }
+          if (!(Test-Path "$hamakazeOut\Hamakaze.lib")) { throw "Hamakaze.lib not found in $hamakazeOut" }
+          if (!(Test-Path "$tanikazeOut\Tanikaze.lib")) { throw "Tanikaze.lib not found in $tanikazeOut" }
+          if (!(Test-Path "$taigeiOut\Taigei.lib"))     { throw "Taigei.lib not found in $taigeiOut" }
 
-          if (!(Test-Path "$hamakazeOut\kdu.exe")) {
-            throw "kdu.exe not found in $hamakazeOut"
-          }
+          Copy-Item "$hamakazeOut\Hamakaze.lib" "bin\lib\Hamakaze.lib" -Force
+          Copy-Item "$tanikazeOut\Tanikaze.lib" "bin\lib\Tanikaze.lib" -Force
+          Copy-Item "$taigeiOut\Taigei.lib"     "bin\lib\Taigei.lib"   -Force
 
-          Copy-Item "$tanikazeOut\drv64.dll" "Package\Application\drv64.dll" -Force
-          Copy-Item "$hamakazeOut\kdu.exe" "Package\Application\KDU.exe" -Force
+          Copy-Item "Source\Hamakaze\hamakaze.h" "bin\include\hamakaze.h" -Force
+          Copy-Item "Source\Taigei\taigei.h"     "bin\include\taigei.h"   -Force
+          Copy-Item "Source\Tanikaze\tanikaze.h" "bin\include\tanikaze.h" -Force
+          Copy-Item "Source\Shared\kdulog.h"     "bin\include\kdulog.h"   -Force
+          Copy-Item "Source\Shared\kdubase.h"    "bin\include\kdubase.h"  -Force
 
-      - name: Upload KDU snapshot
+      - name: Upload KDU static libraries artifact
         uses: actions/upload-artifact@v6
         with:
-          name: kdu_snapshot.zip
-          path: Package\Application\*
+          name: kdu_static_libraries
+          path: bin\*
