@@ -5,3 +5,5 @@ GenAsIo2Unlock is a special utility used to generate the "unlocking" resource re
 PCOMP is an auxiliary utility used to compress provider files. It is not intended for general use and is only used when you need to generate new binary blobs for provider DLLs.
 
 SiPolicyChecker is an auxiliary utility used to check that KDU provider hashes (page SHA1, page SHA256, or file Authenticode) are present in the Microsoft drivers blocklist.
+
+Bin2C is a simple CLI utility used to convert binary files into C byte arrays.
